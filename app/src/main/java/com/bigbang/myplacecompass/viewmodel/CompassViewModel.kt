@@ -17,18 +17,13 @@ class CompassViewModel(private val placesRepository: PlacesRepository): ViewMode
 
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
-
     fun getGetNearbyPlaces( location: String, radius: Int, type: String) {
         compositeDisposable.clear()
         compositeDisposable.add(placesRepository.getPlacesNearby(
             location, radius, type
         ).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread()).map { placesRepository ->
-                placesRepository.results
-            }.subscribe({ placesList ->
-                Log.d("TAG_X", "$placesList")
+            .observeOn(AndroidSchedulers.mainThread()).subscribe({ placesList ->
                 placesMutableData.value = placesList
-
             }, { throwable ->
                 Log.d("TAG_X", "${throwable.localizedMessage}")
             })

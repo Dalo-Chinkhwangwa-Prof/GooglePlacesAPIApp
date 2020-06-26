@@ -1,11 +1,16 @@
 
 package com.bigbang.myplacecompass.model.data;
 
+import android.os.Parcelable;
+
+import java.io.Serializable;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Result {
+import kotlinx.android.parcel.Parcelize;
+
+public class Result implements Serializable {
 
     @SerializedName("business_status")
     @Expose

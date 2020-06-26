@@ -9,4 +9,6 @@
     <string name="zoo_item">Zoo</string>
     <string name="laundry_item">Laundry</string>
     <string name="park_item">Park</string>
+    <string name="no_photos">No photos</string>
+    <string name="directions_text">Directions</string>
 </resources>

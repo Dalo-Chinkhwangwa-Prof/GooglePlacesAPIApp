@@ -11,6 +11,7 @@ class PlaceLocationListener(private val locationDelegate: LocationDelegate) : Lo
     override fun onLocationChanged(location: Location) {
         locationDelegate.setLocation(location)
         locationString = "${location.latitude},${location.longitude}"
+        locationLatLng = location
     }
 
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
