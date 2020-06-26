@@ -2,13 +2,19 @@ package com.bigbang.myplacecompass.ui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.PopupMenu
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,6 +49,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, PopupMenu.OnMenuIt
     private val compassViewModel: CompassViewModel by viewModels<CompassViewModel>(
         factoryProducer = { CompassVMFactory() })
 
+    private var radius = 1100
+
     lateinit var placeObserver: Observer<List<Result>>
 
     private fun displayResults(resultList: List<Result>?) {
@@ -68,6 +76,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, PopupMenu.OnMenuIt
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +95,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, PopupMenu.OnMenuIt
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    scrollToPosition((recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition())
+                    if((recyclerView.adapter as PlaceAdapter).itemCount > 0)
+                        scrollToPosition((recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition())
                 }
             }
         })
@@ -115,13 +125,12 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, PopupMenu.OnMenuIt
 
         locationManager.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
-            1000,
+            200,
             5f,
             placeLocationListener
         )
         val snapHelper: SnapHelper = LinearSnapHelper()
         snapHelper.attachToRecyclerView(recyclerView)
-
     }
 
     fun scrollToPosition(position: Int) {
@@ -147,20 +156,29 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback, PopupMenu.OnMenuIt
             R.id.gym_item -> "gym"
             else -> ""
         }
-        compassViewModel.getGetNearbyPlaces(placeLocationListener.locationString, 10000, placeType)
+        compassViewModel.getGetNearbyPlaces(placeLocationListener.locationString, radius, placeType)
         return true
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun setLocation(location: Location) {
+
+        var icon = BitmapFactory.decodeResource(resources, R.drawable.me_icon)
+        icon = Bitmap.createScaledBitmap(icon, 300, 300, false)
         val currentLocation = LatLng(location.latitude, location.longitude)
         mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
         mMap.addMarker(
             MarkerOptions().position(currentLocation).title("This is you!").icon(
-                BitmapDescriptorFactory.fromResource(R.drawable.me_icon)
+                BitmapDescriptorFactory.fromBitmap(icon)
             )
         )
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
+
+        mMap.addCircle(
+            CircleOptions().center(currentLocation).radius(radius.toDouble())
+                .fillColor(resources.getColor(R.color.blue_alpha75, resources.newTheme()))
+        )
 
     }
 
